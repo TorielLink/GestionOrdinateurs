@@ -1,0 +1,54 @@
+﻿@page "/login"
+@using Blazored.SessionStorage
+@using GestionOrdinateurs.Shared
+@inject HttpClient Http
+@inject ISessionStorageService SessionStorage
+@inject NavigationManager Navigation
+@inject JwtAuthenticationStateProvider AuthProvider
+
+<PageTitle>Login</PageTitle>
+
+<h1>Se connecter</h1>
+
+<input @bind="login" placeholder="Login" />
+
+<button @onclick="SeConnecter">Se connecter</button>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+@code {
+    private string login = string.Empty;
+    private string message = string.Empty;
+
+    private async Task SeConnecter()
+    {
+        // d'abord, on vérifie que l'utilisateur existe
+        var reponse = await Http.GetAsync($"http://localhost:5000/api/utilisateurs/{login}");
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            message = "Cet utilisateur n'existe pas";
+            return;
+        }
+
+        Utilisateur? utilisateur = await reponse.Content.ReadFromJsonAsync<Utilisateur>();
+
+        // ensuite, on demande le token à l'API d'authentification
+        var reponseToken = await Http.PostAsync(
+            $"http://localhost:5130/api/authentication?role={(int)utilisateur!.Role}&login={login}",
+            null);
+
+        string token = await reponseToken.Content.ReadAsStringAsync();
+
+        // et on sauvegarde le token en session
+        await SessionStorage.SetItemAsync("jwtToken", token);
+
+        AuthProvider.NotifyUserAuthentication(token);
+        
+        // enfin on redirige vers l'accueil
+        Navigation.NavigateTo("/");
+    }
+}

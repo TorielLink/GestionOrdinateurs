@@ -1,0 +1,60 @@
+﻿@attribute [Authorize]
+@page "/ordinateurs"
+@using Blazored.SessionStorage
+@using GestionOrdinateurs.Shared
+@inject HttpClient Http
+
+<PageTitle>Ordinateurs</PageTitle>
+
+<h1>Liste des ordinateurs</h1>
+
+@if (_message != "")
+{
+    <p>@_message</p>
+}
+else if (_ordinateurs == null)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prix</th>
+            <th>Devise</th>
+            <th>Vendu</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (Ordinateur o in _ordinateurs)
+        {
+            <tr>
+                <td>@o.Nom</td>
+                <td>@o.Prix.ToString("N2")</td>
+                <td>EUR</td>
+                <td>@(o.Vendu ? "Oui" : "Non")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Ordinateur>? _ordinateurs;
+    private string _message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var reponse = await Http.GetAsync("api/ordinateurs");
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _message = $"Erreur {(int)reponse.StatusCode}";
+            return;
+        }
+
+        _ordinateurs = await reponse.Content.ReadFromJsonAsync<List<Ordinateur>>();
+    }
+}

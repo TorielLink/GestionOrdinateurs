@@ -1,0 +1,73 @@
+### Ajouter un ordinateur portable
+POST http://localhost:5156/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nom": "Moi",
+  "marque": "Lenovo",
+  "ram": 16,
+  "processeur": "Intel Core i7",
+  "etat": 0
+}
+
+
+### Ajouter un ordinateur fixe
+POST http://localhost:5156/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 2,
+  "nom": "Station-01",
+  "marque": "Dell",
+  "ram": 32,
+  "processeur": "Intel Core i9",
+  "etat": 0
+}
+
+
+### Lister tous les ordinateurs
+GET http://localhost:5156/api/ordinateurs
+Accept: application/json
+
+
+### Récupérer l'ordinateur avec l'ID 1
+GET http://localhost:5156/api/ordinateurs/1
+Accept: application/json
+
+
+### Tester un ID inexistant → doit retourner 404
+GET http://localhost:5156/api/ordinateurs/999
+Accept: application/json
+
+
+### Modifier l'ordinateur 1
+PUT http://localhost:5156/api/ordinateurs/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nom": "Portable-Toriel-Updated",
+  "marque": "Lenovo",
+  "ram": 32,
+  "processeur": "Intel Core Ultra 7",
+  "etat": 0
+}
+
+
+### Tester la modification
+GET http://localhost:5156/api/ordinateurs/1
+Accept: application/json
+
+
+### Supprimer l'ordinateur 2
+DELETE http://localhost:5156/api/ordinateurs/2
+
+
+### Vérifier que l'ordinateur 2 a bien été supprimé → 404
+GET http://localhost:5156/api/ordinateurs/2
+Accept: application/json
+
+
+### Tester la suppression d'un ordinateur inexistant → 404
+DELETE http://localhost:5156/api/ordinateurs/999

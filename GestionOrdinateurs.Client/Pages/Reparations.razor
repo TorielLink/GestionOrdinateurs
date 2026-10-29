@@ -1,0 +1,61 @@
+﻿@attribute [Authorize]
+@page "/reparations"
+@using Blazored.SessionStorage
+@using GestionOrdinateurs.Shared
+@inject HttpClient Http
+
+<PageTitle>Réparations</PageTitle>
+
+<h1>Historique des réparations</h1>
+
+@if (_message != "")
+{
+    <p>@_message</p>
+}
+else if (_historique == null)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Ordinateur</th>
+            <th>Technicien</th>
+            <th>Type</th>
+            <th>Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (HistoriqueReparationRecord h in _historique)
+        {
+            <tr>
+                <td>@h.NomOrdinateur</td>
+                <td>@h.Technicien</td>
+                <td>@h.TypeReparation</td>
+                <td>@h.DateIntervention.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<HistoriqueReparationRecord>? _historique;
+    private string _message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Le JwtHandler ajoute le token, et l'adresse de base est celle de la Gateway (port 5010)
+        var reponse = await Http.GetAsync("api/reparation/historique");
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _message = $"Erreur {(int)reponse.StatusCode}";
+            return;
+        }
+
+        _historique = await reponse.Content.ReadFromJsonAsync<List<HistoriqueReparationRecord>>();
+    }
+}
