@@ -483,3 +483,4 @@ $RECYCLE.BIN/
 
 *.log
 .idea/
+.env
