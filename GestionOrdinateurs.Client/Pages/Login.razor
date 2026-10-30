@@ -10,7 +10,8 @@
 
 <h1>Se connecter</h1>
 
-<input @bind="login" placeholder="Login" />
+<input @bind="login" placeholder="Utilisateur" />
+<input type="password" @bind="motDePasse" placeholder="Mot de passe" />
 
 <button @onclick="SeConnecter">Se connecter</button>
 
@@ -21,34 +22,25 @@
 
 @code {
     private string login = string.Empty;
+    private string motDePasse = string.Empty;
     private string message = string.Empty;
 
     private async Task SeConnecter()
     {
-        // d'abord, on vérifie que l'utilisateur existe
-        var reponse = await Http.GetAsync($"http://localhost:5000/api/utilisateurs/{login}");
+        var reponse = await Http.PostAsJsonAsync(
+            "http://localhost:5157/api/auth/login",
+            new LoginKeycloakRequest(login, motDePasse));
 
         if (!reponse.IsSuccessStatusCode)
         {
-            message = "Cet utilisateur n'existe pas";
+            message = "Identifiant ou mot de passe incorrect";
             return;
         }
 
-        Utilisateur? utilisateur = await reponse.Content.ReadFromJsonAsync<Utilisateur>();
+        KeycloakTokenResponse? token = await reponse.Content.ReadFromJsonAsync<KeycloakTokenResponse>();
 
-        // ensuite, on demande le token à l'API d'authentification
-        var reponseToken = await Http.PostAsync(
-            $"http://localhost:5130/api/authentication?role={(int)utilisateur!.Role}&login={login}",
-            null);
-
-        string token = await reponseToken.Content.ReadAsStringAsync();
-
-        // et on sauvegarde le token en session
-        await SessionStorage.SetItemAsync("jwtToken", token);
-
-        AuthProvider.NotifyUserAuthentication(token);
-        
-        // enfin on redirige vers l'accueil
+        await SessionStorage.SetItemAsync("jwtToken", token!.AccessToken);
+        AuthProvider.NotifyUserAuthentication(token.AccessToken);
         Navigation.NavigateTo("/");
     }
 }

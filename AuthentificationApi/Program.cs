@@ -18,6 +18,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHttpClient<KeycloakAuthService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Keycloak:BaseUrl"]
+        ?? throw new InvalidOperationException("Keycloak:BaseUrl manquant dans appsettings.json"));
+});
+
 var app = builder.Build();
 
 app.UseSwagger();

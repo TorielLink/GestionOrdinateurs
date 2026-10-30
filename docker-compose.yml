@@ -45,6 +45,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5157
+      Keycloak__BaseUrl: http://keycloak:8080/
     depends_on:
       - postgres
       - keycloak
@@ -62,8 +63,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5127
+      Keycloak__MetadataAddress: http://keycloak:8080/realms/gestionordinateurs/.well-known/openid-configuration
     networks:
       - appnet
+      - keycloak
   
   gateway:
     image: ${DOCKER_ACCOUNT}/gateway:latest
@@ -76,8 +79,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5010
+      Keycloak__MetadataAddress: http://keycloak:8080/realms/gestionordinateurs/.well-known/openid-configuration
     depends_on:
       - gestionordinateurs-api
+      - keycloak
     networks:
       - appnet
   
