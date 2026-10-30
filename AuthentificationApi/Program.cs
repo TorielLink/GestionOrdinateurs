@@ -14,12 +14,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
-        policy.WithOrigins("http://localhost:5114") 
+        policy.WithOrigins("http://localhost:5000", "http://localhost:5114") 
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 
+// client HTTP vers Keycloak
 builder.Services.AddHttpClient<KeycloakAuthService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Keycloak:BaseUrl"]

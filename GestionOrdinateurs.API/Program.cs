@@ -2,7 +2,6 @@ using GestionOrdinateurs.API.Services;
 using GestionOrdinateurs.API.Data;
 using GestionOrdinateurs.Shared;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -56,17 +55,14 @@ builder.Services.AddSwaggerGen(c =>
         In = ParameterLocation.Header,
         Description = "Entrez : Bearer {token}"
     });
-    
+
     c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
     });
 });
 
-// Configuration JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "";
-var key = Encoding.ASCII.GetBytes(jwtKey);
-
+// config JWT : validation tokens de Keycloak
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,13 +70,14 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
+    // les clefs publiques de signature sont lues sur Keycloak
+    options.MetadataAddress = builder.Configuration["Keycloak:MetadataAddress"]!;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
+        ValidIssuer = builder.Configuration["Keycloak:Issuer"],
+        ValidateAudience = false,
+        RoleClaimType = "roles",
+        NameClaimType = "preferred_username"
     };
     options.Events = new JwtBearerEvents
     {
@@ -91,24 +88,13 @@ builder.Services.AddAuthentication(options =>
         },
         OnAuthenticationFailed = context =>
         {
-            Console.WriteLine("Token Invalide");
+            Console.WriteLine($"Token Invalide : {context.Exception.Message}");
             return Task.CompletedTask;
         }
     };
 });
 
-
-// Pour autoriser les appels de nos API
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowBlazorClient", policy =>
-    {
-        policy.WithOrigins("http://localhost:5114") 
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
+// CORS est géré par la Gateway
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -139,10 +125,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication(); // lit et valide le token
-app.UseAuthorization(); // applique [Authorize]
+app.UseAuthorization();  // applique [Authorize]
 
 app.MapControllers();
 

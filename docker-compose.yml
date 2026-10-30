@@ -20,12 +20,9 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 8180
+      KC_HOSTNAME: http://localhost:8180
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
     command: start-dev
     ports:
       - "8180:8080"

@@ -50,12 +50,24 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
         foreach (var claim in token.Claims)
         {
-            if (claim.Type == "role")
-                claims.Add(new Claim(ClaimTypes.Role, claim.Value));
-            else if (claim.Type == "unique_name")
-                claims.Add(new Claim(ClaimTypes.Name, claim.Value));
-            else
-                claims.Add(claim);
+            switch (claim.Type)
+            {
+                case "role":
+                    claims.Add(new Claim(ClaimTypes.Role, claim.Value));
+                    break;
+                case "unique_name":
+                    claims.Add(new Claim(ClaimTypes.Name, claim.Value));
+                    break;
+                case "roles":
+                    claims.Add(new Claim(ClaimTypes.Role, claim.Value));
+                    break;
+                case "preferred_username":
+                    claims.Add(new Claim(ClaimTypes.Name, claim.Value));
+                    break;
+                default:
+                    claims.Add(claim);
+                    break;
+            }
         }
 
         return claims;
