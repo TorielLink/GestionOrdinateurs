@@ -1,3 +1,5 @@
+using AuthentificationApi;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Enregistrement des contrôleurs
