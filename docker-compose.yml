@@ -64,9 +64,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5127
       Keycloak__MetadataAddress: http://keycloak:8080/realms/gestionordinateurs/.well-known/openid-configuration
+    depends_on:
+      - keycloak
     networks:
       - appnet
-      - keycloak
   
   gateway:
     image: ${DOCKER_ACCOUNT}/gateway:latest
